@@ -34,7 +34,7 @@
 4. 填写以下信息：
    - **名称**：青龙面板脚本合集
    - **类型**：公开仓库
-   - **链接**：`https://github.com/jfeng018/qlScripts`（如果项目迁移到GitHub后）
+   - **链接**：`https://github.com/jfeng018/ql-scripts`（如果项目迁移到GitHub后）
    - **定时规则**：`0 8 * * *` （每天上午8点检查更新）
    - **白名单**：留空（同步所有脚本）或指定特定脚本
 
@@ -57,7 +57,7 @@ cd /ql/scripts
 # 创建项目目录
 mkdir -p 189pan
 # 将脚本文件复制到此目录
-cp /path/to/qlScripts/189pan/script/189pan.py ./189pan/
+cp /path/to/ql-scripts/189pan/script/189pan.py ./189pan/
 ```
 
 ### 3️⃣ 安装依赖
@@ -108,7 +108,7 @@ pip3 install requests pyquery rsa lxml pytz
 ## 📁 项目结构
 
 ```
-qlScripts/                  # 青龙面板脚本合集根目录
+ql-scripts/                  # 青龙面板脚本合集根目录
 └── 189pan/                 # 天翼云盘签到脚本目录
     ├── script/
     │   └── 189pan.py       # 天翼云盘签到脚本
@@ -120,7 +120,7 @@ qlScripts/                  # 青龙面板脚本合集根目录
 随着项目发展，将会添加更多的脚本目录：
 
 ```
-qlScripts/                  # 青龙面板脚本合集根目录
+ql-scripts/                  # 青龙面板脚本合集根目录
 ├── 189pan/                 # 天翼云盘签到脚本目录
 ├── other_script/           # 其他脚本目录
 ├── another_script/         # 另一个脚本目录
