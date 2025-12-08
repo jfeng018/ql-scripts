@@ -57,12 +57,12 @@ class CryptoUtils:
     """加密工具类"""
 
     @staticmethod
-    def int2char(a: int) -> str:
+    def int2char(a):
         """整数转字符"""
         return Config.BI_RM[a]
 
     @staticmethod
-    def b64tohex(a: str) -> str:
+    def b64tohex(a):
         """Base64转十六进制"""
         d = ""
         e = 0
@@ -92,7 +92,7 @@ class CryptoUtils:
         return d
 
     @staticmethod
-    def rsa_encode(j_rsakey: str, string: str) -> str:
+    def rsa_encode(j_rsakey, string):
         """RSA加密"""
         rsa_key = f"-----BEGIN PUBLIC KEY-----\n{j_rsakey}\n-----END PUBLIC KEY-----"
         pubkey = rsa.PublicKey.load_pkcs1_openssl_pem(rsa_key.encode())
@@ -102,13 +102,13 @@ class CryptoUtils:
 class TianYiCloudBot:
     """天翼云盘自动签到抽奖机器人"""
 
-    def __init__(self, username: str, password: str, account_id: str = ""):
+    def __init__(self, username, password, account_id=""):
         self.username = username
         self.password = password
         self.account_id = account_id or f"账户{username[:3]}***"
         self.session = requests.Session()
 
-    def _extract_login_params(self, html: str) -> Dict[str, str]:
+    def _extract_login_params(self, html):
         """从HTML中提取登录参数"""
         try:
             captcha_token = re.findall(r"captchaToken' value='(.+?)'", html)[0]
@@ -127,7 +127,7 @@ class TianYiCloudBot:
         except (IndexError, AttributeError) as e:
             raise Exception(f"提取登录参数失败: {e}")
 
-    def login(self) -> bool:
+    def login(self):
         """登录天翼云盘"""
         try:
             # 获取登录token
@@ -195,7 +195,7 @@ class TianYiCloudBot:
             return False
 
 
-    def sign_in(self) -> Tuple[bool, str]:
+    def sign_in(self):
         """执行签到"""
         try:
             rand = str(round(time.time() * 1000))
@@ -219,7 +219,7 @@ class TianYiCloudBot:
             print(error_msg)
             return False, error_msg
 
-    def draw_prize(self, round_num: int, url: str) -> Tuple[bool, str]:
+    def draw_prize(self, round_num, url):
         """执行抽奖"""
         try:
             response = self.session.get(url, headers=Config.SIGN_HEADERS, timeout=10)
@@ -238,7 +238,7 @@ class TianYiCloudBot:
             print(error_msg)
             return False, error_msg
 
-    def run(self) -> Dict[str, str]:
+    def run(self):
         """执行完整的签到抽奖流程"""
         results = {
             'account_id': self.account_id,
@@ -269,7 +269,7 @@ class TianYiCloudBot:
         return results
 
 
-def load_accounts() -> List[Tuple[str, str]]:
+def load_accounts():
     """加载账户信息 - 修改为适配青龙面板环境变量"""
     # 直接从环境变量获取，不再使用dotenv
     username_env = os.environ.get("TYYP_USERNAME")
@@ -289,7 +289,7 @@ def load_accounts() -> List[Tuple[str, str]]:
 
     return list(zip(usernames, passwords))
 
-def format_notification_content(accounts_results: List[Dict], duration: float) -> str:
+def format_notification_content(accounts_results, duration):
     """格式化通知内容"""
     content = f"天翼云盘签到任务完成\n"
     content += f"执行时间: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n"
