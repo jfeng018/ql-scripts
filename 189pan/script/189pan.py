@@ -8,17 +8,32 @@ import requests
 import os
 import sys
 from datetime import datetime
-from typing import List, Dict, Optional, Tuple
 
 # 青龙面板通知模块
+notify_enabled = False
+send = None
+
+# 尝试多种方式导入通知模块
 try:
     from sendNotify import send
     notify_enabled = True
-except ImportError:
-    notify_enabled = False
-    def send(title, content):
-        print(f"[通知] {title}\n{content}")
-
+except:
+    try:
+        import sendNotify
+        send = sendNotify.send
+        notify_enabled = True
+    except:
+        try:
+            # 青龙面板2.0版本的通知模块
+            sys.path.append('/ql/scripts')
+            sys.path.append('/ql/data/scripts')
+            import sendNotify
+            send = sendNotify.send
+            notify_enabled = True
+        except:
+            def send(title, content):
+                print(f"[通知] {title}\n{content}")
+            notify_enabled = False
 
 class Config:
     """配置类，管理所有常量和URL"""
@@ -377,7 +392,7 @@ def main():
         notification_title = f"天翼云盘签到 - {end_time.strftime('%Y-%m-%d')}"
         notification_content = format_notification_content(all_results, duration)
         
-        if notify_enabled:
+        if notify_enabled and send:
             send(notification_title, notification_content)
             print("\n🔔 通知已发送")
         else:
