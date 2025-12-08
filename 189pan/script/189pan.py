@@ -1,3 +1,6 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 import time
 import re
 import json
@@ -9,32 +12,32 @@ import os
 import sys
 from datetime import datetime
 
-# 青龙面板通知模块
-notify_enabled = False
-send = None
+print("=== 天翼云盘签到脚本 v2.0 ===")
+print("启动时间:", datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
 
-# 尝试多种方式导入通知模块
-try:
-    from sendNotify import send
-    notify_enabled = True
-except:
+# 青龙面板通知模块 - 使用内置notify模块
+def send_notification(title, content):
+    """
+    使用青龙面板内置notify模块发送通知
+    """
     try:
-        import sendNotify
-        send = sendNotify.send
-        notify_enabled = True
-    except:
-        try:
-            # 青龙面板2.0版本的通知模块
-            sys.path.append('/ql/scripts')
-            sys.path.append('/ql/data/scripts')
-            import sendNotify
-            send = sendNotify.send
-            notify_enabled = True
-        except:
-            def send(title, content):
-                print(f"[通知] {title}\n{content}")
-            notify_enabled = False
+        # 导入青龙面板的notify模块
+        from notify import send
+        send(title, content)
+        print("✓ 通知发送成功")
+        return True
+    except ImportError:
+        print("✗ 无法导入notify模块")
+        print(f"[通知] {title}")
+        print(f"[内容] {content}")
+        return False
+    except Exception as e:
+        print(f"✗ 通知发送失败: {e}")
+        print(f"[通知] {title}")
+        print(f"[内容] {content}")
+        return False
 
+# 天翼云盘签到核心类
 class Config:
     """配置类，管理所有常量和URL"""
 
@@ -392,8 +395,8 @@ def main():
         notification_title = f"天翼云盘签到 - {end_time.strftime('%Y-%m-%d')}"
         notification_content = format_notification_content(all_results, duration)
         
-        if notify_enabled and send:
-            send(notification_title, notification_content)
+        # 使用青龙面板内置通知
+        if send_notification(notification_title, notification_content):
             print("\n🔔 通知已发送")
         else:
             print("\n📝 通知内容预览:")
