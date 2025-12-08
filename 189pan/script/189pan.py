@@ -10,6 +10,15 @@ import sys
 from datetime import datetime
 from typing import List, Dict, Optional, Tuple
 
+# 青龙面板通知模块
+try:
+    from sendNotify import send
+    notify_enabled = True
+except ImportError:
+    notify_enabled = False
+    def send(title, content):
+        print(f"[通知] {title}\n{content}")
+
 
 class Config:
     """配置类，管理所有常量和URL"""
@@ -280,35 +289,65 @@ def load_accounts() -> List[Tuple[str, str]]:
 
     return list(zip(usernames, passwords))
 
+def format_notification_content(accounts_results: List[Dict], duration: float) -> str:
+    """格式化通知内容"""
+    content = f"天翼云盘签到任务完成\n"
+    content += f"执行时间: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n"
+    content += f"运行时长: {duration:.2f}秒\n"
+    content += f"账户数量: {len(accounts_results)}个\n"
+    content += "=" * 30 + "\n"
+    
+    for i, result in enumerate(accounts_results, 1):
+        content += f"账户{i} ({result.get('account_id', 'Unknown')}):\n"
+        content += f"  登录状态: {result['login']}\n"
+        content += f"  签到结果: {result['sign_in']}\n"
+        
+        # 抽奖结果
+        if result['draws']:
+            content += "  抽奖结果:\n"
+            for j, draw_result in enumerate(result['draws'], 1):
+                # 提取关键信息
+                clean_result = draw_result.replace(f"第{j}次", "").strip()
+                content += f"    第{j}次: {clean_result}\n"
+        content += "\n"
+    
+    content += "=" * 30 + "\n"
+    content += "✅ 任务执行完成!"
+    return content
 
 def main():
     """主程序"""
     # 记录开始时间
     start_time = datetime.now()
-
+    
     print("# 天翼云盘自动签到抽奖程序")
     print()
-
+    
     # 加载账户信息
     accounts = load_accounts()
     print(f"## 执行概览")
     print(f"- **启动时间**: {start_time.strftime('%Y-%m-%d %H:%M:%S')}")
     print(f"- **账户数量**: {len(accounts)} 个")
     print()
-
+    
+    # 存储所有账户的执行结果
+    all_results = []
+    
     # 处理每个账户
     for i, (username, password) in enumerate(accounts, 1):
         account_id = f"账户{i}"
         print(f"## {account_id}")
-
+        
         bot = TianYiCloudBot(username, password, account_id)
         results = bot.run()
-
+        results['account_id'] = account_id
+        all_results.append(results)
+        
         # 输出结果摘要
         print(f"### 执行结果")
         print(f"- **登录状态**: {results['login']}")
         print(f"- **签到结果**: {results['sign_in']}")
-
+        
         # 抽奖结果
         if results['draws']:
             print(f"- **抽奖结果**:")
@@ -319,20 +358,33 @@ def main():
                     print(f"  - 🎉 第{j}次: {clean_result}")
                 else:
                     print(f"  - ❌ 第{j}次: {clean_result}")
-
+        
         print()
-
+    
     # 记录结束时间并计算运行时间
     end_time = datetime.now()
-    duration = end_time - start_time
-
+    duration = (end_time - start_time).total_seconds()
+    
     print("---")
     print("## 执行统计")
     print(f"- **结束时间**: {end_time.strftime('%Y-%m-%d %H:%M:%S')}")
-    print(f"- **运行时长**: {duration.total_seconds():.2f} 秒")
+    print(f"- **运行时长**: {duration:.2f} 秒")
     print()
     print("✅ **所有账户处理完成！**")
-
+    
+    # 发送通知
+    try:
+        notification_title = f"天翼云盘签到 - {end_time.strftime('%Y-%m-%d')}"
+        notification_content = format_notification_content(all_results, duration)
+        
+        if notify_enabled:
+            send(notification_title, notification_content)
+            print("\n🔔 通知已发送")
+        else:
+            print("\n📝 通知内容预览:")
+            print(notification_content)
+    except Exception as e:
+        print(f"\n❌ 发送通知失败: {e}")
 
 if __name__ == "__main__":
     main()
