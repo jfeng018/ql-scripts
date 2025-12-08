@@ -1,0 +1,21 @@
+{
+  "name": "天翼云盘签到脚本",
+  "author": "jfeng018",
+  "scripts": [
+    {
+      "name": "189pan.py",
+      "path": "script/189pan.py",
+      "support": true
+    }
+  ],
+  "dependencies": [
+    "requests>=2.28.0",
+    "pyquery>=1.4.3",
+    "rsa>=4.8",
+    "lxml>=4.9.0",
+    "pytz>=2022.1"
+  ],
+  "description": "天翼云盘自动签到工具，支持多账户，自动签到和抽奖",
+  "version": "1.0.0",
+  "type": "public"
+}
