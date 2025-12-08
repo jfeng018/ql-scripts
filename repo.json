@@ -9,6 +9,11 @@
       "name": "天翼云盘签到脚本",
       "path": "189pan",
       "description": "天翼云盘自动签到工具，支持多账户，自动签到和抽奖"
+    },
+    {
+      "name": "通知模块测试工具",
+      "path": "notification_test",
+      "description": "用于测试青龙面板通知模块是否正常工作的专用工具"
     }
   ]
 }
