@@ -3,7 +3,7 @@
   "author": "jfeng018",
   "description": "专为青龙面板设计的脚本项目合集，包含各种自动化脚本",
   "version": "1.0.0",
-  "type": "public",
+  "branch": "main",
   "scripts": [
     {
       "name": "天翼云盘签到脚本",
