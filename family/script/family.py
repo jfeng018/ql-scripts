@@ -87,134 +87,6 @@ def calculate_child_age(child_birthday):
     except Exception:
         return "N/A"
 
-def get_holiday_countdown(tianapi_key):
-    """获取节假日倒计时"""
-    try:
-        today = datetime.today().strftime("%Y-%m-%d")
-        
-        # 使用天行API获取节假日信息
-        if tianapi_key:
-            url = f"https://apis.tianapi.com/jiejiari/index?key={tianapi_key}&date={today}"
-            response = requests.get(url, timeout=10)
-            
-            if response.status_code == 200:
-                data = response.json()
-                if data.get("code") == 200:
-                    holiday_list = data.get("result", {}).get("list", [])
-                    if holiday_list:
-                        next_holiday = holiday_list[0]
-                        name = next_holiday.get("name", "")
-                        date = next_holiday.get("time", "")
-                        
-                        # 过滤非中国节日
-                        if name and "国际" not in name and "世界" not in name:
-                            holiday_date = datetime.strptime(date, "%Y-%m-%d")
-                            today_date = datetime.strptime(today, "%Y-%m-%d")
-                            days = (holiday_date - today_date).days
-                            
-                            return {
-                                "name": name,
-                                "date": date,
-                                "days": days
-                            }
-    except Exception as e:
-        print(f"获取节假日信息失败: {e}")
-    
-    # 备用方案：返回默认值
-    return {
-        "name": "近期没有节日",
-        "date": "",
-        "days": "N/A"
-    }
-
-def get_daily_quote():
-    """获取每日一句"""
-    try:
-        response = requests.get("https://v1.hitokoto.cn/?c=a&c=b&c=c&c=d", timeout=10)
-        if response.status_code == 200:
-            data = response.json()
-            hitokoto = data.get("hitokoto", "")
-            source = data.get("from", "")
-            
-            if hitokoto and hitokoto != "null":
-                return {
-                    "content": hitokoto,
-                    "author": source if source and source != "null" else "未知"
-                }
-    except Exception as e:
-        print(f"获取每日一句失败: {e}")
-    
-    return {
-        "content": "生活就像海洋，只有意志坚强的人才能到达彼岸",
-        "author": "马克思"
-    }
-
-def get_daily_poetry():
-    """获取每日古诗词"""
-    try:
-        response = requests.get("https://v2.jinrishici.com/one.json", timeout=10)
-        if response.status_code == 200:
-            data = response.json()
-            if data.get("status") == "success":
-                content = data.get("data", {}).get("content", "")
-                origin = data.get("data", {}).get("origin", {})
-                author = origin.get("author", "") if origin else ""
-                title = origin.get("title", "") if origin else ""
-                dynasty = origin.get("dynasty", "") if origin else ""
-                
-                if content and content != "null":
-                    return {
-                        "content": content,
-                        "author": author if author and author != "null" else "未知",
-                        "title": title if title and title != "null" else "无题",
-                        "dynasty": dynasty if dynasty and dynasty != "null" else "未知"
-                    }
-    except Exception as e:
-        print(f"获取古诗词失败: {e}")
-    
-    return {
-        "content": "床前明月光，疑是地上霜。举头望明月，低头思故乡。",
-        "author": "李白",
-        "title": "静夜思",
-        "dynasty": "唐"
-    }
-
-def get_cloud_comment(tianapi_key):
-    """获取网易云热评"""
-    try:
-        if tianapi_key:
-            url = f"https://apis.tianapi.com/hotreview/index?key={tianapi_key}"
-            response = requests.get(url, timeout=10)
-            
-            if response.status_code == 200:
-                data = response.json()
-                if data.get("code") == 200:
-                    result = data.get("result", {})
-                    content = result.get("content", "")
-                    song = result.get("song", "")
-                    singer = result.get("singer", "")
-                    
-                    if content and song and content != "null" and song != "null":
-                        return {
-                            "content": content,
-                            "song": song,
-                            "singer": singer if singer and singer != "null" else ""
-                        }
-    except Exception as e:
-        print(f"获取网易云热评失败: {e}")
-    
-    # 备用热评
-    comments = [
-        {"content": "十七岁吻的人额头没有粉底", "song": "十七岁"},
-        {"content": "十年前你说生如夏花般绚烂，十年后你说平凡才是唯一的答案", "song": "生如夏花"},
-        {"content": "后来我终于知道，它并不是我的花，我只是恰好途经了它的盛放", "song": "平凡之路"},
-        {"content": "你那么孤独，却说一个人真好", "song": "If"},
-        {"content": "小时候刮奖刮出‘谢’字还不扔，非要把‘谢谢惠顾’都刮得干干净净才舍得放手", "song": "情书"}
-    ]
-    
-    import random
-    return random.choice(comments)
-
 def get_anniversaries():
     """计算纪念日信息"""
     # 从环境变量获取配置
@@ -251,28 +123,13 @@ def get_anniversaries():
 
 def generate_message():
     """生成推送内容"""
-    # 获取配置
-    tianapi_key = os.environ.get("FAMILY_TIANAPI_KEY", "")
-    
     # 获取各类信息
     anniversaries = get_anniversaries()
-    quote = get_daily_quote()
-    holiday = get_holiday_countdown(tianapi_key)
-    poetry = get_daily_poetry()
-    comment = get_cloud_comment(tianapi_key)
     
     today = datetime.today().strftime("%Y-%m-%d")
     
     # 构造消息内容
-    message = f"📅 每日生活简报 ({today})\n\n"
-    
-    # 节日信息
-    message += f"🎉 {holiday['name']}\n"
-    if holiday['date']:
-        message += f"📅 日期: {holiday['date']}\n"
-    if holiday['days'] != "N/A":
-        message += f"⏳ 倒计时: {holiday['days']}天\n"
-    message += "\n"
+    message = f"📅 家庭温馨提醒 ({today})\n\n"
     
     # 家庭纪念日
     message += "❤️ 家庭纪念日\n"
@@ -283,33 +140,12 @@ def generate_message():
     message += f"老公生日倒计时: {anniversaries['husband_days']}天\n"
     message += f"孩子年龄: {anniversaries['child_age']}\n"
     message += f"孩子生日倒计时: {anniversaries['child_days']}天\n"
-    message += "\n"
-    
-    # 古诗词
-    message += "🎋 每日古诗词\n"
-    message += f"{poetry['content']}\n"
-    message += f"—— {poetry['dynasty']}·{poetry['author']}《{poetry['title']}》\n"
-    message += "\n"
-    
-    # 网易云热评
-    message += "🎵 网易云热评\n"
-    message += f"{comment['content']}\n"
-    if comment.get('singer'):
-        message += f"—— {comment['song']} · {comment['singer']}\n"
-    else:
-        message += f"—— {comment['song']}\n"
-    message += "\n"
-    
-    # 每日一句
-    message += "💬 每日一句:\n"
-    message += f"{quote['content']}\n"
-    message += f"—— {quote['author']}"
     
     return message
 
 def main():
     """主函数"""
-    print("=== 家庭纪念日提醒脚本 ===")
+    print("=== 家庭纪念日提醒脚本（精简版） ===")
     print(f"执行时间: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     
     try:
