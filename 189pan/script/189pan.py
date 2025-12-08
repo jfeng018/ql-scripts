@@ -12,30 +12,47 @@ import os
 import sys
 from datetime import datetime
 
-print("=== 天翼云盘签到脚本 v2.0 ===")
+print("=== 天翼云盘签到脚本 Final Version ===")
 print("启动时间:", datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
 
 # 青龙面板通知模块 - 使用内置notify模块
 def send_notification(title, content):
     """
     使用青龙面板内置notify模块发送通知
+    支持多种通知方式的自动检测和使用
     """
-    try:
-        # 导入青龙面板的notify模块
-        from notify import send
-        send(title, content)
-        print("✓ 通知发送成功")
-        return True
-    except ImportError:
-        print("✗ 无法导入notify模块")
+    notification_sent = False
+    
+    # 尝试多种通知方式
+    notification_methods = [
+        # 方法1: 直接导入send函数
+        lambda: __import__('notify', fromlist=['send']).send(title, content),
+        
+        # 方法2: 导入模块后调用
+        lambda: (lambda n: (n.send(title, content), hasattr(n, 'send')))(__import__('notify')),
+        
+        # 方法3: 使用ql.notify (青龙面板2.0+)
+        lambda: __import__('ql', fromlist=['notify']).notify.send(title, content),
+    ]
+    
+    for i, method in enumerate(notification_methods, 1):
+        try:
+            result = method()
+            if result is not None:  # 如果返回值不是None，说明可能发送成功
+                notification_sent = True
+                print(f"✓ 通知发送成功 (方式{i})")
+                break
+        except Exception as e:
+            print(f"✗ 通知方式{i}失败: {str(e)}")
+            continue
+    
+    # 如果所有方式都失败，至少打印到控制台
+    if not notification_sent:
+        print("⚠ 未找到可用的通知渠道，使用控制台输出")
         print(f"[通知] {title}")
         print(f"[内容] {content}")
-        return False
-    except Exception as e:
-        print(f"✗ 通知发送失败: {e}")
-        print(f"[通知] {title}")
-        print(f"[内容] {content}")
-        return False
+    
+    return notification_sent
 
 # 天翼云盘签到核心类
 class Config:
@@ -396,10 +413,11 @@ def main():
         notification_content = format_notification_content(all_results, duration)
         
         # 使用青龙面板内置通知
+        print("\n--- 通知发送 ---")
         if send_notification(notification_title, notification_content):
-            print("\n🔔 通知已发送")
+            print("🔔 通知发送成功")
         else:
-            print("\n📝 通知内容预览:")
+            print("📝 通知内容预览:")
             print(notification_content)
     except Exception as e:
         print(f"\n❌ 发送通知失败: {e}")
