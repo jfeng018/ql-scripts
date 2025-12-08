@@ -89,12 +89,27 @@ def calculate_child_age(child_birthday):
 
 def get_anniversaries():
     """计算纪念日信息"""
-    # 从环境变量获取配置
-    love_date = os.environ.get("FAMILY_LOVE_DATE", "2014-12-13")
-    birthday_wife = os.environ.get("FAMILY_BIRTHDAY_WIFE", "1996-04-12")
-    birthday_husband = os.environ.get("FAMILY_BIRTHDAY_HUSBAND", "1994-10-31")
-    birthday_marry = os.environ.get("FAMILY_BIRTHDAY_MARRY", "2022-07-30")
-    child_birthday = os.environ.get("FAMILY_CHILD_BIRTHDAY", "2024-02-28")
+    # 从环境变量获取配置（新方案：使用单个变量包含所有日期）
+    family_dates = os.environ.get("FAMILY_DATES", "")
+    
+    # 默认值（使用假数据）
+    default_dates = "2020-01-01|1990-05-15|1988-12-03|2021-10-01|2023-03-20"
+    
+    # 如果没有配置，则使用默认值
+    if not family_dates:
+        family_dates = default_dates
+    
+    # 解析日期
+    dates = family_dates.split("|")
+    if len(dates) != 5:
+        # 如果格式不正确，使用默认值
+        dates = default_dates.split("|")
+    
+    love_date = dates[0]  # 恋爱日期
+    birthday_wife = dates[1]  # 妻子生日
+    birthday_husband = dates[2]  # 丈夫生日
+    birthday_marry = dates[3]  # 结婚纪念日
+    child_birthday = dates[4]  # 孩子生日
     
     today = datetime.today().strftime("%Y-%m-%d")
     year = datetime.today().year
@@ -145,7 +160,7 @@ def generate_message():
 
 def main():
     """主函数"""
-    print("=== 家庭纪念日提醒脚本（精简版） ===")
+    print("=== 家庭纪念日提醒脚本（合并变量版） ===")
     print(f"执行时间: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     
     try:
