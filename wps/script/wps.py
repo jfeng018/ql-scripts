@@ -117,15 +117,15 @@ class WPSApiClient:
         # 基础请求头
         self.base_headers = {
             'User-Agent': self.user_agent,
-            'Referer': 'https://vip.wps.cn/',
+            'Referer': 'https://personal-act.wps.cn/',
             'Accept': 'application/json, text/plain, */*',
             'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8',
             'Content-Type': 'application/json'
         }
         
-        # API端点
-        self.encrypt_key_url = 'https://vip.wps.cn/sign/v1/rpc/getEncryptKey'
-        self.sign_in_url = 'https://vip.wps.cn/sign/v1/signin'
+        # API端点 (使用正确的端点)
+        self.encrypt_key_url = 'https://personal-bus.wps.cn/sign_in/v1/encrypt/key'
+        self.sign_in_url = 'https://personal-bus.wps.cn/sign_in/v1/sign_in'
         self.user_info_url = 'https://vip.wps.cn/userinfo'
         self.sign_info_url = 'https://vip.wps.cn/sign/v1/get'
         
