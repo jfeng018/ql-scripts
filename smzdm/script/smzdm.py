@@ -8,6 +8,7 @@ import requests
 from datetime import datetime
 import time
 import re
+import hashlib
 
 # 青龙面板官方通知方式 - 最简实现
 def send_notification(title, content):
@@ -43,14 +44,26 @@ class SMZDMClient:
         self.session.cookies.update(cookie_dict)
         
         # 设置User-Agent和其他请求头
-        self.user_agent = user_agent or 'Mozilla/5.0 (iPhone; CPU iPhone OS 14_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148 Smzdm/10.4.26 rv:1011 (iPhone11,8; iOS 14.0; zh_CN)/iphone_smzdmapp/10.4.26/wkwebview/jsbv_1011/ae9ba8a6ed980ff5d2ef17724d3383ee9548f007/apiv/1'
+        self.user_agent = user_agent or 'smzdm 10.4.15 rv:133.2 (iPhone 11; iOS 15.4; zh_CN)/iphone_smzdmapp/10.4.15'
         self.session.headers.update({
             'User-Agent': self.user_agent,
             'Referer': 'https://m.smzdm.com/',
-            'Accept': 'application/json, text/plain, */*',
-            'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8',
-            'Connection': 'keep-alive'
+            'Accept': '*/*',
+            'Accept-Language': 'zh-Hans-CN;q=1',
+            'Connection': 'keep-alive',
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'request_key': '294971941672128192'
         })
+    
+    def _generate_sign(self, params):
+        """生成签名"""
+        # 按照什么值得买的要求生成签名
+        # 这里使用固定的时间戳和签名作为示例
+        # 实际应用中可能需要动态生成
+        timestamp = str(int(time.time() * 1000))
+        sign_str = f"f=iphone&time={timestamp}&v=10.4.15&weixin=1"
+        sign = hashlib.md5(sign_str.encode()).hexdigest().upper()
+        return sign, timestamp
     
     def sign_in(self):
         """执行签到"""
@@ -58,12 +71,16 @@ class SMZDMClient:
             # 构造签到URL
             sign_url = 'https://user-api.smzdm.com/checkin'
             
+            # 生成签名和时间戳
+            sign_value, timestamp = self._generate_sign({})
+            
             # 构造签到数据
             data = {
-                "touchstone_event": "",
-                "sk": "1",
-                "token": "",
-                "captcha": ""
+                "f": "iphone",
+                "sign": sign_value,
+                "time": timestamp,
+                "v": "10.4.15",
+                "weixin": "1"
             }
             
             # 发送签到请求
