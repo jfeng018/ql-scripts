@@ -8,6 +8,15 @@ import requests
 from datetime import datetime
 import time
 import re
+import logging
+from typing import Dict, Any
+
+# 配置日志
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
 
 # 青龙面板官方通知方式 - 最简实现
 def send_notification(title, content):
@@ -44,55 +53,112 @@ class EnshanClient:
         self.session.cookies.update(cookie_dict)
         
         # 设置User-Agent和其他请求头
-        self.user_agent = user_agent or 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+        self.user_agent = user_agent or (
+            'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) '
+            'AppleWebKit/537.36 (KHTML, like Gecko) '
+            'Chrome/141.0.0.0 Safari/537.36'
+        )
         self.session.headers.update({
             'User-Agent': self.user_agent,
-            'Referer': 'https://www.right.com.cn/forum/',
-            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-            'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8',
-            'Connection': 'keep-alive'
+            'Accept': 'application/json, text/javascript, */*; q=0.01',
+            'Accept-Encoding': 'gzip, deflate, br, zstd',
+            'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+            'sec-ch-ua-platform': '"macOS"',
+            'X-Requested-With': 'XMLHttpRequest',
+            'sec-ch-ua': '"Brave";v="141", "Not?A_Brand";v="8", "Chromium";v="141"',
+            'sec-ch-ua-mobile': '?0',
+            'Sec-GPC': '1',
+            'Accept-Language': 'zh-CN,zh;q=0.9',
+            'Origin': 'https://www.right.com.cn',
+            'Sec-Fetch-Site': 'same-origin',
+            'Sec-Fetch-Mode': 'cors',
+            'Sec-Fetch-Dest': 'empty',
+            'Referer': 'https://www.right.com.cn/forum/erling_qd-sign_in.html',
+            'Cookie': self.cookies
         })
+    
+    def get_headers(self) -> Dict[str, str]:
+        """
+        获取请求头
+        """
+        return {
+            'User-Agent': self.user_agent,
+            'Accept': 'application/json, text/javascript, */*; q=0.01',
+            'Accept-Encoding': 'gzip, deflate, br, zstd',
+            'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+            'sec-ch-ua-platform': '"macOS"',
+            'X-Requested-With': 'XMLHttpRequest',
+            'sec-ch-ua': '"Brave";v="141", "Not?A_Brand";v="8", "Chromium";v="141"',
+            'sec-ch-ua-mobile': '?0',
+            'Sec-GPC': '1',
+            'Accept-Language': 'zh-CN,zh;q=0.9',
+            'Origin': 'https://www.right.com.cn',
+            'Sec-Fetch-Site': 'same-origin',
+            'Sec-Fetch-Mode': 'cors',
+            'Sec-Fetch-Dest': 'empty',
+            'Referer': 'https://www.right.com.cn/forum/erling_qd-sign_in.html',
+            'Cookie': self.cookies
+        }
     
     def sign_in(self):
         """执行签到"""
+        logger.info("开始执行恩山论坛签到...")
+        headers = self.get_headers()
+        sign_url = 'https://www.right.com.cn/forum/plugin.php?id=erling_qd:action&action=sign'
+        data = {
+            'formhash': self.formhash
+        }
+        
         try:
-            # 构造签到URL
-            sign_url = f'https://www.right.com.cn/forum/plugin.php?id=dsu_paulsign:sign&operation=qiandao&infloat=1&inajax=1'
+            response = requests.post(
+                sign_url,
+                headers=headers,
+                data=data,
+                timeout=30
+            )
             
-            # 构造签到数据
-            data = {
-                'formhash': self.formhash,
-                'submit': '1',
-                'qiandao': '1'
-            }
+            # 检查响应状态
+            response.raise_for_status()
             
-            # 发送签到请求
-            response = self.session.post(sign_url, data=data, timeout=10)
-            
-            # 检查响应内容判断签到结果
-            if '签到成功' in response.text or '恭喜你签到成功' in response.text:
-                return True, "签到成功"
-            elif '您今日已经签到' in response.text:
-                return True, "今日已签到"
-            else:
-                # 尝试提取错误信息
-                match = re.search(r'<div class="alert_error">(.*?)</div>', response.text)
-                if match:
-                    error_msg = match.group(1).strip()
-                    return False, f"签到失败: {error_msg}"
+            # 尝试解析JSON响应
+            try:
+                result = response.json()
+                logger.info(f"恩山论坛签到成功: {result}")
+                return True, result
+            except json.JSONDecodeError:
+                # 如果不是JSON响应，检查文本内容
+                response_text = response.text
+                if '签到成功' in response_text or '恭喜你签到成功' in response_text:
+                    return True, "签到成功"
+                elif '您今日已经签到' in response_text:
+                    return True, "今日已签到"
                 else:
-                    return False, "签到失败，未知原因"
-                    
+                    # 尝试提取错误信息
+                    match = re.search(r'<div class="alert_error">(.*?)</div>', response_text)
+                    if match:
+                        error_msg = match.group(1).strip()
+                        return False, f"签到失败: {error_msg}"
+                    else:
+                        return False, f"签到失败，响应内容: {response_text[:100]}"
+                        
+        except requests.RequestException as e:
+            error_msg = f"签到失败: {str(e)}"
+            logger.error(error_msg)
+            return False, error_msg
         except Exception as e:
-            print(f"签到失败: {e}")
-            return False, f"签到异常: {str(e)}"
+            error_msg = f"签到异常: {str(e)}"
+            logger.error(error_msg)
+            return False, error_msg
     
     def get_sign_info(self):
         """获取签到信息"""
         try:
             # 访问论坛首页获取用户信息
             home_url = 'https://www.right.com.cn/forum/'
-            response = self.session.get(home_url, timeout=10)
+            response = self.session.get(home_url, timeout=30)
+            
+            # 检查响应状态
+            response.raise_for_status()
             
             # 尝试提取用户信息
             # 查找用户名
@@ -105,9 +171,14 @@ class EnshanClient:
             
             return True, f"用户: {username}, 连续签到: {sign_days}天"
             
+        except requests.RequestException as e:
+            error_msg = f"获取签到信息失败: {str(e)}"
+            logger.error(error_msg)
+            return False, error_msg
         except Exception as e:
-            print(f"获取签到信息失败: {e}")
-            return False, f"获取签到信息异常: {str(e)}"
+            error_msg = f"获取签到信息异常: {str(e)}"
+            logger.error(error_msg)
+            return False, error_msg
 
 def load_accounts():
     """加载账户信息 - 适配青龙面板环境变量"""

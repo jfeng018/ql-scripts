@@ -72,10 +72,9 @@ ERKE_ACCOUNTS=[{"member_id": "your_member_id", "enterprise_id": "your_enterprise
 
 #### 获取账户信息方法
 
-1. 使用微信打开鸿星尔克小程序并登录账号
-2. 使用抓包工具（如HttpCanary）抓取鸿星尔克小程序的网络请求
-3. 找到签到相关的请求
-4. 提取请求参数中的member_id、enterprise_id、unionid、openid、wx_openid等信息
+1. 使用抓包工具（如HttpCanary）抓取鸿星尔克小程序的网络请求
+2. 找到请求参数中的member_id、enterprise_id、unionid、openid、wx_openid信息
+3. 提取对应的值
 
 #### 注意事项
 
@@ -90,7 +89,7 @@ ERKE_ACCOUNTS=[{"member_id": "your_member_id", "enterprise_id": "your_enterprise
 
 - **任务名称**：鸿星尔克签到
 - **命令**：`python3 /ql/scripts/erke/script/erke.py`
-- **定时规则**： `30 8 * * *` （每天上午8点30分执行）
+- **定时规则**：`0 9 * * *` （每天上午9点执行）
 - **任务标签**：erke
 
 ### 5️⃣ 手动测试
@@ -102,49 +101,3 @@ python3 /ql/scripts/erke/script/erke.py
 ```
 
 ---
-
-## 📁 项目结构
-
-```
-erke/                       # 鸿星尔克签到脚本目录
-├── script/                 # 脚本文件目录
-│   └── erke.py             # 鸿星尔克签到主脚本
-├── repo.json              # 脚本元信息配置
-└── README.md              # 鸿星尔克签到说明
-```
-
----
-
-## 🔄 自动更新机制
-
-通过青龙面板的订阅管理功能，您可以实现所有脚本的自动更新：
-
-1. 青龙面板会定期检查仓库更新（根据您设置的定时规则）
-2. 如果检测到新版本，会自动下载并应用更新
-3. 您可以在「订阅管理」页面查看更新日志
-
----
-
-## 🐛 常见问题及解决方案
-
-| 问题 | 解决方案 |
-|------|----------|
-| 🔐 权限错误 | 确认环境变量配置正确 |
-| 📦 依赖缺失 | 安装所需Python依赖包 |
-| 📄 日志无输出 | 检查脚本路径是否正确 |
-| 🔄 更新失败 | 检查订阅链接是否正确，网络连接是否正常 |
-| 🪪 账户信息失效 | 更新环境变量中的账户信息 |
-
----
-
-## 🤝 贡献
-
-欢迎提交Issue和Pull Request来改进项目！
-
----
-
-<div align="center">
-
-如果觉得这个项目有用，请给它一个⭐Star！
-
-</div>

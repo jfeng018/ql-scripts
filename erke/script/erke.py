@@ -7,7 +7,8 @@ import json
 import requests
 from datetime import datetime
 import time
-import re
+import hashlib
+import random
 
 # 青龙面板官方通知方式 - 最简实现
 def send_notification(title, content):
@@ -27,15 +28,51 @@ def send_notification(title, content):
         print(f"\n[通知] {title}\n{content}")
         return False
 
+def calculate_sign(appid, member_id, timestamp=None):
+    """
+    计算请求签名
+    
+    Args:
+        appid: 小程序appid
+        member_id: 会员ID
+        timestamp: 时间戳，不传则自动生成
+    
+    Returns:
+        dict: 包含sign和相关参数的字典
+    """
+    if timestamp is None:
+        timestamp = str(int(time.time() * 1000))  # 毫秒级时间戳
+    
+    trans_id = appid + timestamp
+    secret = "damogic8888"
+    random_str = str(random.randint(100000, 999999))
+    
+    # 拼接签名字符串
+    sign_str = f"{secret}{member_id}{random_str}{timestamp}{trans_id}"
+    
+    # MD5加密
+    md5_hash = hashlib.md5()
+    md5_hash.update(sign_str.encode('utf-8'))
+    sign = md5_hash.hexdigest().upper()
+    
+    return {
+        'sign': sign,
+        'random': random_str,
+        'appid': appid,
+        'transId': trans_id,
+        'timestamp': timestamp
+    }
+
 class ErkeClient:
     """鸿星尔克API客户端"""
     
-    def __init__(self, member_id, enterprise_id, unionid, openid, wx_openid, user_agent=None):
+    def __init__(self, member_id, enterprise_id, unionid, openid, wx_openid, appid="wxa1f1fa3785a42271", user_agent=None):
         self.member_id = member_id
         self.enterprise_id = enterprise_id
         self.unionid = unionid
         self.openid = openid
         self.wx_openid = wx_openid
+        self.appid = appid
         self.session = requests.Session()
         
         # 设置请求头
@@ -48,69 +85,120 @@ class ErkeClient:
             'Content-Type': 'application/json'
         })
     
-    def sign_in(self):
-        """执行签到"""
-        try:
-            # 构造签到URL
-            sign_url = 'https://erp-mp.erke.com/api/sign/signIn'
-            
-            # 构造签到数据
-            data = {
-                "memberId": self.member_id,
-                "enterpriseId": self.enterprise_id,
-                "unionid": self.unionid,
-                "openid": self.openid,
-                "wxOpenid": self.wx_openid
-            }
-            
-            # 发送签到请求
-            response = self.session.post(sign_url, json=data, timeout=10)
-            
-            # 检查响应内容判断签到结果
-            if response.status_code == 200:
-                result = response.json()
-                if result.get('code') == '0000':
-                    data = result.get('data', {})
-                    return True, f"签到成功，获得{data.get('point', 0)}积分"
-                elif result.get('code') == '9999' and '已签到' in result.get('msg', ''):
-                    return True, "今日已签到"
-                else:
-                    return False, f"签到失败: {result.get('msg', '未知错误')}"
-            else:
-                return False, f"签到请求失败，状态码: {response.status_code}"
-                
-        except Exception as e:
-            print(f"签到失败: {e}")
-            return False, f"签到异常: {str(e)}"
+    def get_headers(self, enterprise_id="-1"):
+        """获取请求头"""
+        return {
+            'Host': 'wxx.erke.com',
+            'Connection': 'keep-alive',
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'Accept-Encoding': 'gzip,compress,br,deflate',
+            'User-Agent': self.user_agent,
+            'Referer': 'https://servicewechat.com/wxa1f1fa3785a42271/339/page-frame.html',
+            'enterpriseId': enterprise_id
+        }
     
     def get_points_info(self):
         """获取积分信息"""
         try:
-            # 获取用户积分信息URL
-            points_url = 'https://erp-mp.erke.com/api/member/getMemberInfo'
+            # 计算签名
+            sign_data = calculate_sign(self.appid, self.member_id)
             
-            # 构造请求参数
-            params = {
-                "memberId": self.member_id,
-                "enterpriseId": self.enterprise_id
+            # 构建请求数据
+            data = {
+                'memberId': self.member_id,
+                'cliqueId': '-1',
+                'cliqueMemberId': '-1',
+                'useClique': '0',
+                'enterpriseId': self.enterprise_id,
+                'unionid': self.unionid,
+                'openid': self.openid,
+                'wxOpenid': self.wx_openid,
+                'random': sign_data['random'],
+                'appid': sign_data['appid'],
+                'transId': sign_data['transId'],
+                'sign': sign_data['sign'],
+                'timestamp': sign_data['timestamp'],
+                'gicWxaVersion': '3.9.56',
+                'launchOptions': '{"path":"pages/authorize/authorize","query":{},"scene":1101,"referrerInfo":{},"apiCategory":"default"}'
             }
             
+            # 获取请求头
+            headers = self.get_headers(self.enterprise_id)
+            
             # 发送请求
-            response = self.session.get(points_url, params=params, timeout=10)
+            url = 'https://wxx.erke.com/gic-wx-app-member/member/getMemberInfoByWxApp'
+            response = self.session.post(url, headers=headers, data=data, timeout=10)
             
             if response.status_code == 200:
                 result = response.json()
-                if result.get('code') == '0000':
+                if result.get('rsp_code') == '0000':
                     data = result.get('data', {})
-                    return True, f"当前积分: {data.get('point', 0)}"
+                    point = data.get('point', 0) if data else 0
+                    return True, f"当前积分: {point}"
                 else:
-                    return False, f"获取积分信息失败: {result.get('msg', '未知错误')}"
+                    return False, f"获取积分信息失败: {result.get('rsp_msg', '未知错误')}"
             else:
                 return False, f"获取积分信息请求失败，状态码: {response.status_code}"
                 
         except Exception as e:
             print(f"获取积分信息失败: {e}")
             return False, f"获取积分信息异常: {str(e)}"
+    
+    def sign_in(self):
+        """执行签到"""
+        try:
+            # 计算签名
+            sign_data = calculate_sign(self.appid, self.member_id)
+            
+            # 构建签到数据
+            data = {
+                'source': 'wxapp',
+                'memberId': self.member_id,
+                'cliqueId': '-1',
+                'cliqueMemberId': '-1',
+                'useClique': 0,
+                'enterpriseId': self.enterprise_id,
+                'unionid': self.unionid,
+                'openid': self.openid,
+                'wxOpenid': self.wx_openid,
+                'sign': sign_data['sign'],
+                'random': sign_data['random'],
+                'appid': sign_data['appid'],
+                'transId': sign_data['transId'],
+                'timestamp': sign_data['timestamp'],
+                'gicWxaVersion': '3.9.56',
+                'launchOptions': '{"path":"pages/authorize/authorize","query":{},"scene":1101,"referrerInfo":{},"apiCategory":"default"}'
+            }
+            
+            # 获取请求头
+            headers = self.get_headers(self.enterprise_id)
+            headers['Content-Type'] = 'application/json;charset=UTF-8'
+            
+            # 发送签到请求
+            url = 'https://wxx.erke.com/gic-wx-app-member/sign/member_sign.json'
+            response = self.session.post(url, headers=headers, json=data, timeout=10)
+            
+            # 检查响应内容判断签到结果
+            if response.status_code == 200:
+                result = response.json()
+                rsp_code = result.get('rsp_code', '')
+                rsp_msg = result.get('rsp_msg', '')
+                
+                # 处理各种成功情况
+                success_codes = ['0000', '1001', '0', '200']
+                if rsp_code in success_codes or '成功' in rsp_msg or '已签到' in rsp_msg:
+                    # 尝试提取积分信息
+                    data = result.get('data', {})
+                    point = data.get('point', 0) if data else 0
+                    return True, f"签到成功，获得{point}积分"
+                else:
+                    return False, f"签到失败: {rsp_msg}"
+            else:
+                return False, f"签到请求失败，状态码: {response.status_code}"
+                
+        except Exception as e:
+            print(f"签到失败: {e}")
+            return False, f"签到异常: {str(e)}"
 
 def load_accounts():
     """加载账户信息 - 适配青龙面板环境变量"""
@@ -190,13 +278,13 @@ def main():
         # 创建API客户端
         client = ErkeClient(member_id, enterprise_id, unionid, openid, wx_openid, user_agent)
         
-        # 执行签到
-        sign_success, sign_msg = client.sign_in()
-        print(f"- **签到结果**: {'成功' if sign_success else '失败'} - {sign_msg}")
-        
         # 获取积分信息
         points_success, points_msg = client.get_points_info()
         print(f"- **积分信息**: {points_msg}")
+        
+        # 执行签到
+        sign_success, sign_msg = client.sign_in()
+        print(f"- **签到结果**: {'成功' if sign_success else '失败'} - {sign_msg}")
         
         result = {
             'sign_result': f"{'成功' if sign_success else '失败'} - {sign_msg}",
@@ -206,7 +294,7 @@ def main():
         
         # 添加延迟避免请求过快
         if i < len(accounts):
-            time.sleep(2)
+            time.sleep(random.uniform(2, 5))
         
         print()
     

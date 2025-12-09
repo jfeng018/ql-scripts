@@ -19,6 +19,7 @@
 - 🛠️ **青龙面板集成** - 专为青龙面板优化，支持环境变量配置
 - 🔄 **自动更新** - 支持通过订阅管理功能实现所有脚本的在线更新
 - 👥 **多账户支持** - 支持配置多个什么值得买账户同时签到
+- 🎯 **任务完成** - 自动完成日常任务获取更多积分
 
 ---
 
@@ -62,20 +63,20 @@
 
 ##### 单账户配置
 ```json
-SMZDM_ACCOUNTS=[{"cookie": "your_full_cookie_string"}]
+SMZDM_ACCOUNTS=[{"cookie": "your_cookie"}]
 ```
 
 ##### 多账户配置
 ```json
-SMZDM_ACCOUNTS=[{"cookie": "your_full_cookie_string"}, {"cookie": "your_another_cookie_string"}]
+SMZDM_ACCOUNTS=[{"cookie": "your_cookie"}, {"cookie": "your_another_cookie"}]
 ```
 
 #### 获取Cookie方法
 
-1. 使用浏览器打开[什么值得买](https://www.smzdm.com/)并登录账号
+1. 使用浏览器打开[什么值得买官网](https://www.smzdm.com/)并登录账号
 2. 按F12打开开发者工具
 3. 切换到Network标签
-4. 刷新页面或执行操作
+4. 刷新页面或执行签到操作
 5. 找到任意请求，查看Request Headers中的Cookie
 6. 复制完整的Cookie字符串
 
@@ -92,7 +93,7 @@ SMZDM_ACCOUNTS=[{"cookie": "your_full_cookie_string"}, {"cookie": "your_another_
 
 - **任务名称**：什么值得买签到
 - **命令**：`python3 /ql/scripts/smzdm/script/smzdm.py`
-- **定时规则**：`0 7 * * *` （每天上午7点执行）
+- **定时规则**：`0 10 * * *` （每天上午10点执行）
 - **任务标签**：smzdm
 
 ### 5️⃣ 手动测试
@@ -104,49 +105,3 @@ python3 /ql/scripts/smzdm/script/smzdm.py
 ```
 
 ---
-
-## 📁 项目结构
-
-```
-smzdm/                      # 什么值得买签到脚本目录
-├── script/                 # 脚本文件目录
-│   └── smzdm.py            # 什么值得买签到主脚本
-├── repo.json              # 脚本元信息配置
-└── README.md              # 什么值得买签到说明
-```
-
----
-
-## 🔄 自动更新机制
-
-通过青龙面板的订阅管理功能，您可以实现所有脚本的自动更新：
-
-1. 青龙面板会定期检查仓库更新（根据您设置的定时规则）
-2. 如果检测到新版本，会自动下载并应用更新
-3. 您可以在「订阅管理」页面查看更新日志
-
----
-
-## 🐛 常见问题及解决方案
-
-| 问题 | 解决方案 |
-|------|----------|
-| 🔐 权限错误 | 确认环境变量配置正确 |
-| 📦 依赖缺失 | 安装所需Python依赖包 |
-| 📄 日志无输出 | 检查脚本路径是否正确 |
-| 🔄 更新失败 | 检查订阅链接是否正确，网络连接是否正常 |
-| 🍪 Cookie失效 | 更新环境变量中的Cookie |
-
----
-
-## 🤝 贡献
-
-欢迎提交Issue和Pull Request来改进项目！
-
----
-
-<div align="center">
-
-如果觉得这个项目有用，请给它一个⭐Star！
-
-</div>

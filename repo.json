@@ -2,7 +2,7 @@
   "name": "青龙面板脚本合集",
   "author": "jfeng018",
   "description": "专为青龙面板设计的脚本项目合集，包含各种自动化脚本",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "branch": "main",
   "scripts": [
     {
@@ -18,7 +18,7 @@
     {
       "name": "WPS签到脚本",
       "path": "wps",
-      "description": "WPS Office每日自动签到工具，支持多账户，自动签到获取积分"
+      "description": "WPS每日自动签到工具，支持多账户，自动签到获取会员权益"
     },
     {
       "name": "顺丰速运签到脚本",

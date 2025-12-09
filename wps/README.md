@@ -1,11 +1,11 @@
-# 🌟 WPS Office签到脚本
+# 🌟 WPS签到脚本
 
 <div align="center">
 
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Python](https://img.shields.io/badge/python-3.8+-green.svg)](https://python.org)
 
-**🚀 专为青龙面板设计的WPS Office签到脚本，每日自动签到获取积分**
+**🚀 专为青龙面板设计的WPS签到脚本，每日自动签到获取会员权益**
 
 </div>
 
@@ -15,10 +15,11 @@
 
 - 🔔 **通知支持** - 脚本完成后自动发送通知消息
 - 🎯 **自动签到** - 每日定时自动签到，无需手动操作
-- 📈 **积分统计** - 实时显示签到获得的积分
+- 📈 **积分统计** - 实时显示签到获得的会员权益
 - 🛠️ **青龙面板集成** - 专为青龙面板优化，支持环境变量配置
 - 🔄 **自动更新** - 支持通过订阅管理功能实现所有脚本的在线更新
 - 👥 **多账户支持** - 支持配置多个WPS账户同时签到
+- 🔐 **安全加密** - 使用RSA+AES双重加密保证签到安全
 
 ---
 
@@ -62,22 +63,21 @@
 
 ##### 单账户配置
 ```json
-WPS_ACCOUNTS=[{"user_id": "123456789", "cookies": "your_full_cookie_string"}]
+WPS_ACCOUNTS=[{"user_id": "12345", "cookies": "your_cookies"}]
 ```
 
 ##### 多账户配置
 ```json
-WPS_ACCOUNTS=[{"user_id": "123456789", "cookies": "your_full_cookie_string"}, {"user_id": "987654321", "cookies": "your_another_cookie_string"}]
+WPS_ACCOUNTS=[{"user_id": "12345", "cookies": "your_cookies"}, {"user_id": "67890", "cookies": "your_another_cookies"}]
 ```
 
-#### 获取Cookie方法
+#### 获取账户信息方法
 
-1. 使用浏览器打开[WPS官网](https://www.wps.cn/)并登录账号
+1. 使用浏览器打开WPS官网并登录账号
 2. 按F12打开开发者工具
-3. 切换到Network标签
-4. 刷新页面或执行操作
-5. 找到任意请求，查看Request Headers中的Cookie
-6. 复制完整的Cookie字符串
+3. 刷新页面，在Network选项卡中找到userinfo请求
+4. 在Headers中找到Cookie信息，复制wps_sid的值
+5. 在Response中找到user_id的值
 
 #### 注意事项
 
@@ -86,16 +86,24 @@ WPS_ACCOUNTS=[{"user_id": "123456789", "cookies": "your_full_cookie_string"}, {"
 3. 环境变量名称必须完全一致，区分大小写
 4. 不要在代码中硬编码账号信息，应始终使用环境变量
 
-### 4️⃣ 设置定时任务
+### 4️⃣ 安装依赖
+
+WPS签到脚本需要额外的加密库支持，请在青龙面板中执行以下命令安装依赖：
+
+```bash
+pip3 install pycryptodome
+```
+
+### 5️⃣ 设置定时任务
 
 在青龙面板中进入「定时任务」页面，点击「新建任务」按钮，填写以下信息：
 
 - **任务名称**：WPS签到
 - **命令**：`python3 /ql/scripts/wps/script/wps.py`
-- **定时规则**：`0 9 * * *` （每天上午9点执行）
+- **定时规则**：`0 8 * * *` （每天上午8点执行）
 - **任务标签**：wps
 
-### 5️⃣ 手动测试
+### 6️⃣ 手动测试
 
 您可以通过以下方式手动测试脚本：
 
@@ -104,49 +112,3 @@ python3 /ql/scripts/wps/script/wps.py
 ```
 
 ---
-
-## 📁 项目结构
-
-```
-wps/                        # WPS签到脚本目录
-├── script/                 # 脚本文件目录
-│   └── wps.py             # WPS签到主脚本
-├── repo.json              # 脚本元信息配置
-└── README.md              # WPS签到说明
-```
-
----
-
-## 🔄 自动更新机制
-
-通过青龙面板的订阅管理功能，您可以实现所有脚本的自动更新：
-
-1. 青龙面板会定期检查仓库更新（根据您设置的定时规则）
-2. 如果检测到新版本，会自动下载并应用更新
-3. 您可以在「订阅管理」页面查看更新日志
-
----
-
-## 🐛 常见问题及解决方案
-
-| 问题 | 解决方案 |
-|------|----------|
-| 🔐 权限错误 | 确认环境变量配置正确 |
-| 📦 依赖缺失 | 安装所需Python依赖包 |
-| 📄 日志无输出 | 检查脚本路径是否正确 |
-| 🔄 更新失败 | 检查订阅链接是否正确，网络连接是否正常 |
-| 🍪 Cookie失效 | 更新环境变量中的Cookie |
-
----
-
-## 🤝 贡献
-
-欢迎提交Issue和Pull Request来改进项目！
-
----
-
-<div align="center">
-
-如果觉得这个项目有用，请给它一个⭐Star！
-
-</div>

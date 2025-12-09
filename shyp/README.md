@@ -57,30 +57,29 @@
 
 | 变量名 | 类型 | 必填 | 说明 | 示例 |
 |--------|------|------|------|------|
-| `SHYP_ACCOUNTS` | JSON数组 | 是 | 上海杨浦账户信息，支持多账户 | `[{"token": "your_token"}]` |
+| `SHYP_ACCOUNTS` | JSON数组 | 是 | 上海杨浦账户信息，支持多账户 | `[{"token": "your_token", "device_id": "your_device_id"}]` |
 
 #### 配置示例
 
 ##### 单账户配置
 ```json
-SHYP_ACCOUNTS=[{"token": "your_token"}]
+SHYP_ACCOUNTS=[{"token": "your_token", "device_id": "your_device_id"}]
 ```
 
 ##### 多账户配置
 ```json
-SHYP_ACCOUNTS=[{"token": "your_token"}, {"token": "your_another_token"}]
+SHYP_ACCOUNTS=[{"token": "your_token", "device_id": "your_device_id"}, {"token": "your_another_token", "device_id": "your_another_device_id"}]
 ```
 
-#### 获取Token方法
+#### 获取Token和Device ID方法
 
-1. 使用微信打开上海杨浦小程序并登录账号
-2. 使用抓包工具（如HttpCanary）抓取上海杨浦小程序的网络请求
-3. 找到请求头中的Authorization信息
-4. 提取Bearer后面的token值
+1. 使用抓包工具（如HttpCanary）抓取上海杨浦APP的网络请求
+2. 找到请求头中的token和deviceid信息
+3. 提取对应的值
 
 #### 注意事项
 
-1. Token具有时效性，建议定期更新
+1. Token和Device ID具有时效性，建议定期更新
 2. 多账户之间使用逗号分隔
 3. 环境变量名称必须完全一致，区分大小写
 4. 不要在代码中硬编码账号信息，应始终使用环境变量
@@ -103,49 +102,3 @@ python3 /ql/scripts/shyp/script/shyp.py
 ```
 
 ---
-
-## 📁 项目结构
-
-```
-shyp/                       # 上海杨浦签到脚本目录
-├── script/                 # 脚本文件目录
-│   └── shyp.py             # 上海杨浦签到主脚本
-├── repo.json              # 脚本元信息配置
-└── README.md              # 上海杨浦签到说明
-```
-
----
-
-## 🔄 自动更新机制
-
-通过青龙面板的订阅管理功能，您可以实现所有脚本的自动更新：
-
-1. 青龙面板会定期检查仓库更新（根据您设置的定时规则）
-2. 如果检测到新版本，会自动下载并应用更新
-3. 您可以在「订阅管理」页面查看更新日志
-
----
-
-## 🐛 常见问题及解决方案
-
-| 问题 | 解决方案 |
-|------|----------|
-| 🔐 权限错误 | 确认环境变量配置正确 |
-| 📦 依赖缺失 | 安装所需Python依赖包 |
-| 📄 日志无输出 | 检查脚本路径是否正确 |
-| 🔄 更新失败 | 检查订阅链接是否正确，网络连接是否正常 |
-| 🪪 Token失效 | 更新环境变量中的Token |
-
----
-
-## 🤝 贡献
-
-欢迎提交Issue和Pull Request来改进项目！
-
----
-
-<div align="center">
-
-如果觉得这个项目有用，请给它一个⭐Star！
-
-</div>

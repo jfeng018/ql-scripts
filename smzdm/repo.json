@@ -2,7 +2,7 @@
   "name": "什么值得买签到脚本",
   "author": "jfeng018",
   "description": "什么值得买每日自动签到工具，支持多账户，自动签到获取积分",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "scripts": [
     {
       "name": "smzdm.py",
