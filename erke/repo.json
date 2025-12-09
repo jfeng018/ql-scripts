@@ -1,0 +1,16 @@
+{
+  "name": "鸿星尔克签到脚本",
+  "author": "jfeng018",
+  "description": "鸿星尔克每日自动签到工具，支持多账户，自动签到获取积分",
+  "version": "1.0.0",
+  "scripts": [
+    {
+      "name": "erke.py",
+      "path": "script/erke.py",
+      "description": "鸿星尔克每日自动签到脚本"
+    }
+  ],
+  "dependencies": [
+    "requests>=2.28.0"
+  ]
+}

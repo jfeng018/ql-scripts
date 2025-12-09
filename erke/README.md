@@ -1,0 +1,150 @@
+# 🌟 鸿星尔克签到脚本
+
+<div align="center">
+
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![Python](https://img.shields.io/badge/python-3.8+-green.svg)](https://python.org)
+
+**🚀 专为青龙面板设计的鸿星尔克签到脚本，每日自动签到获取积分**
+
+</div>
+
+---
+
+## 📊 功能特性
+
+- 🔔 **通知支持** - 脚本完成后自动发送通知消息
+- 🎯 **自动签到** - 每日定时自动签到，无需手动操作
+- 📈 **积分统计** - 实时显示签到获得的积分
+- 🛠️ **青龙面板集成** - 专为青龙面板优化，支持环境变量配置
+- 🔄 **自动更新** - 支持通过订阅管理功能实现所有脚本的在线更新
+- 👥 **多账户支持** - 支持配置多个鸿星尔克账户同时签到
+
+---
+
+## 🧰 青龙面板使用方法
+
+### 1️⃣ 使用订阅管理（推荐）
+
+本仓库是一个专为青龙面板设计的脚本合集，支持通过订阅管理功能实现所有脚本的在线更新：
+
+1. 打开青龙面板
+2. 进入「订阅管理」页面
+3. 点击「新建订阅」按钮
+4. 填写以下信息：
+   - **名称**：青龙面板脚本合集
+   - **类型**：公开仓库
+   - **链接**：`https://github.com/jfeng018/ql-scripts.git`
+   - **定时规则**：`0 8 * * *` （每天上午8点检查更新）
+   - **白名单**：留空（同步所有脚本）或指定特定脚本
+
+### 2️⃣ 手动拉取（备选方案）
+
+如果您无法使用订阅管理功能，也可以手动拉取脚本：
+
+1. 在青龙面板中进入「脚本管理」页面
+2. 点击「拉取仓库」按钮
+3. 填写仓库信息：
+   - **仓库地址**：`https://github.com/jfeng018/ql-scripts.git`
+   - **分支**：`main`
+
+### 3️⃣ 配置环境变量
+
+在青龙面板中进入「环境变量」页面，点击「新建变量」按钮，添加以下环境变量：
+
+#### 需要配置的环境变量
+
+| 变量名 | 类型 | 必填 | 说明 | 示例 |
+|--------|------|------|------|------|
+| `ERKE_ACCOUNTS` | JSON数组 | 是 | 鸿星尔克账户信息，支持多账户 | `[{"member_id": "your_member_id", "enterprise_id": "your_enterprise_id", "unionid": "your_unionid", "openid": "your_openid", "wx_openid": "your_wx_openid"}]` |
+
+#### 配置示例
+
+##### 单账户配置
+```json
+ERKE_ACCOUNTS=[{"member_id": "your_member_id", "enterprise_id": "your_enterprise_id", "unionid": "your_unionid", "openid": "your_openid", "wx_openid": "your_wx_openid"}]
+```
+
+##### 多账户配置
+```json
+ERKE_ACCOUNTS=[{"member_id": "your_member_id", "enterprise_id": "your_enterprise_id", "unionid": "your_unionid", "openid": "your_openid", "wx_openid": "your_wx_openid"}, {"member_id": "your_another_member_id", "enterprise_id": "your_another_enterprise_id", "unionid": "your_another_unionid", "openid": "your_another_openid", "wx_openid": "your_another_wx_openid"}]
+```
+
+#### 获取账户信息方法
+
+1. 使用微信打开鸿星尔克小程序并登录账号
+2. 使用抓包工具（如HttpCanary）抓取鸿星尔克小程序的网络请求
+3. 找到签到相关的请求
+4. 提取请求参数中的member_id、enterprise_id、unionid、openid、wx_openid等信息
+
+#### 注意事项
+
+1. 账户信息具有时效性，建议定期更新
+2. 多账户之间使用逗号分隔
+3. 环境变量名称必须完全一致，区分大小写
+4. 不要在代码中硬编码账号信息，应始终使用环境变量
+
+### 4️⃣ 设置定时任务
+
+在青龙面板中进入「定时任务」页面，点击「新建任务」按钮，填写以下信息：
+
+- **任务名称**：鸿星尔克签到
+- **命令**：`python3 /ql/scripts/erke/script/erke.py`
+- **定时规则**： `30 8 * * *` （每天上午8点30分执行）
+- **任务标签**：erke
+
+### 5️⃣ 手动测试
+
+您可以通过以下方式手动测试脚本：
+
+```bash
+python3 /ql/scripts/erke/script/erke.py
+```
+
+---
+
+## 📁 项目结构
+
+```
+erke/                       # 鸿星尔克签到脚本目录
+├── script/                 # 脚本文件目录
+│   └── erke.py             # 鸿星尔克签到主脚本
+├── repo.json              # 脚本元信息配置
+└── README.md              # 鸿星尔克签到说明
+```
+
+---
+
+## 🔄 自动更新机制
+
+通过青龙面板的订阅管理功能，您可以实现所有脚本的自动更新：
+
+1. 青龙面板会定期检查仓库更新（根据您设置的定时规则）
+2. 如果检测到新版本，会自动下载并应用更新
+3. 您可以在「订阅管理」页面查看更新日志
+
+---
+
+## 🐛 常见问题及解决方案
+
+| 问题 | 解决方案 |
+|------|----------|
+| 🔐 权限错误 | 确认环境变量配置正确 |
+| 📦 依赖缺失 | 安装所需Python依赖包 |
+| 📄 日志无输出 | 检查脚本路径是否正确 |
+| 🔄 更新失败 | 检查订阅链接是否正确，网络连接是否正常 |
+| 🪪 账户信息失效 | 更新环境变量中的账户信息 |
+
+---
+
+## 🤝 贡献
+
+欢迎提交Issue和Pull Request来改进项目！
+
+---
+
+<div align="center">
+
+如果觉得这个项目有用，请给它一个⭐Star！
+
+</div>

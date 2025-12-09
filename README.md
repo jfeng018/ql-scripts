@@ -21,6 +21,13 @@
 | 脚本名称 | 目录 | 功能说明 |
 |---------|------|---------|
 | [天翼云盘签到](./189pan) | `189pan` | 天翼云盘自动签到工具，支持多账户，自动签到和抽奖 |
+| [WPS签到](./wps) | `wps` | WPS Office每日自动签到工具，支持多账户，自动签到获取积分 |
+| [顺丰速运签到](./sf) | `sf` | 顺丰速运每日自动签到工具，支持多账户，自动签到获取积分 |
+| [恩山论坛签到](./enshan) | `enshan` | 恩山论坛每日自动签到工具，支持多账户，自动签到获取积分 |
+| [看雪论坛签到](./kanxue) | `kanxue` | 看雪论坛每日自动签到工具，支持多账户，自动签到获取积分 |
+| [上海杨浦签到](./shyp) | `shyp` | 上海杨浦每日自动签到工具，支持多账户，自动签到获取积分 |
+| [鸿星尔克签到](./erke) | `erke` | 鸿星尔克每日自动签到工具，支持多账户，自动签到获取积分 |
+| [什么值得买签到](./smzdm) | `smzdm` | 什么值得买每日自动签到工具，支持多账户，自动签到获取积分 |
 
 ---
 
@@ -63,9 +70,43 @@ ql-scripts/                  # 青龙面板脚本合集根目录
 ├── 189pan/                 # 天翼云盘签到脚本目录
 │   ├── script/
 │   │   └── 189pan.py       # 天翼云盘签到脚本
-│   ├── variables.md        # 环境变量配置说明
 │   ├── requirements.txt    # Python依赖
 │   └── README.md          # 天翼云盘签到说明
+├── wps/                    # WPS签到脚本目录
+│   ├── script/
+│   │   └── wps.py         # WPS签到脚本
+│   ├── requirements.txt    # Python依赖
+│   └── README.md          # WPS签到说明
+├── sf/                     # 顺丰速运签到脚本目录
+│   ├── script/
+│   │   └── sf.py          # 顺丰速运签到脚本
+│   ├── requirements.txt    # Python依赖
+│   └── README.md          # 顺丰速运签到说明
+├── enshan/                 # 恩山论坛签到脚本目录
+│   ├── script/
+│   │   └── enshan.py      # 恩山论坛签到脚本
+│   ├── requirements.txt    # Python依赖
+│   └── README.md          # 恩山论坛签到说明
+├── kanxue/                 # 看雪论坛签到脚本目录
+│   ├── script/
+│   │   └── kanxue.py      # 看雪论坛签到脚本
+│   ├── requirements.txt    # Python依赖
+│   └── README.md          # 看雪论坛签到说明
+├── shyp/                   # 上海杨浦签到脚本目录
+│   ├── script/
+│   │   └── shyp.py        # 上海杨浦签到脚本
+│   ├── requirements.txt    # Python依赖
+│   └── README.md          # 上海杨浦签到说明
+├── erke/                   # 鸿星尔克签到脚本目录
+│   ├── script/
+│   │   └── erke.py        # 鸿星尔克签到脚本
+│   ├── requirements.txt    # Python依赖
+│   └── README.md          # 鸿星尔克签到说明
+├── smzdm/                  # 什么值得买签到脚本目录
+│   ├── script/
+│   │   └── smzdm.py       # 什么值得买签到脚本
+│   ├── requirements.txt    # Python依赖
+│   └── README.md          # 什么值得买签到说明
 ├── repo.json              # 仓库配置文件
 └── README.md             # 项目说明
 ```
@@ -75,6 +116,13 @@ ql-scripts/                  # 青龙面板脚本合集根目录
 ```
 ql-scripts/                  # 青龙面板脚本合集根目录
 ├── 189pan/                 # 天翼云盘签到脚本目录
+├── wps/                    # WPS签到脚本目录
+├── sf/                     # 顺丰速运签到脚本目录
+├── enshan/                 # 恩山论坛签到脚本目录
+├── kanxue/                 # 看雪论坛签到脚本目录
+├── shyp/                   # 上海杨浦签到脚本目录
+├── erke/                   # 鸿星尔克签到脚本目录
+├── smzdm/                  # 什么值得买签到脚本目录
 ├── other_script/           # 其他脚本目录
 ├── another_script/         # 另一个脚本目录
 └── ...                     # 更多脚本目录
