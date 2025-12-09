@@ -31,6 +31,9 @@ def send_notification(title, content):
 class SMZDMClient:
     """什么值得买API客户端"""
     
+    # 用于 sign 计算的固定 key
+    SECRET_KEY = "zok5JtAq3$QixaA%mncn*jGWlEpSL3E1"
+    
     def __init__(self, cookie, user_agent=None):
         self.cookie = cookie
         self.session = requests.Session()
@@ -44,7 +47,7 @@ class SMZDMClient:
         self.session.cookies.update(cookie_dict)
         
         # 设置User-Agent和其他请求头
-        self.user_agent = user_agent or 'smzdm 10.4.15 rv:133.2 (iPhone 11; iOS 15.4; zh_CN)/iphone_smzdmapp/10.4.15'
+        self.user_agent = user_agent or 'smzdm 11.1.35 rv:167 (iPhone 6s; iOS 15.8.3; zh_CN)/iphone_smzdmapp/11.1.35'
         self.session.headers.update({
             'User-Agent': self.user_agent,
             'Referer': 'https://m.smzdm.com/',
@@ -52,18 +55,44 @@ class SMZDMClient:
             'Accept-Language': 'zh-Hans-CN;q=1',
             'Connection': 'keep-alive',
             'Content-Type': 'application/x-www-form-urlencoded',
-            'request_key': '294971941672128192'
         })
     
-    def _generate_sign(self, params):
-        """生成签名"""
-        # 按照什么值得买的要求生成签名
-        # 这里使用固定的时间戳和签名作为示例
-        # 实际应用中可能需要动态生成
-        timestamp = str(int(time.time() * 1000))
-        sign_str = f"f=iphone&time={timestamp}&v=10.4.15&weixin=1"
-        sign = hashlib.md5(sign_str.encode()).hexdigest().upper()
-        return sign, timestamp
+    def _generate_sign_from_dict(self, data):
+        """
+        从字典参数生成 sign 签名
+        
+        Args:
+            data: 包含请求参数的字典
+            
+        Returns:
+            计算出的 MD5 签名（大写）
+        """
+        # 1. 获取所有 key 并按字母顺序排序
+        sorted_keys = sorted(data.keys())
+        
+        # 2. 构建 key=value 对，并用 & 连接（跳过空值）
+        params = []
+        for key in sorted_keys:
+            value = data[key]
+            # 跳过空值（None、空字符串、空列表等）
+            if value is not None and value != "" and value != []:
+                # 转换为字符串并去除空格和换行符
+                value_str = re.sub(r'[^\S\r\n]+', '', str(value))
+                # 再次检查处理后的值是否为空
+                if value_str:
+                    params.append(f"{key}={value_str}")
+        
+        # 3. 用 & 连接所有参数
+        query_string = "&".join(params)
+        
+        # 4. 在最后拼接固定的 key
+        query_string += f"&key={self.SECRET_KEY}"
+        
+        # 5. 计算 MD5
+        md5_hash = hashlib.md5(query_string.encode('utf-8')).hexdigest()
+        
+        # 6. 返回大写的 MD5
+        return md5_hash.upper()
     
     def sign_in(self):
         """执行签到"""
@@ -71,27 +100,43 @@ class SMZDMClient:
             # 构造签到URL
             sign_url = 'https://user-api.smzdm.com/checkin'
             
-            # 生成签名和时间戳
-            sign_value, timestamp = self._generate_sign({})
-            
-            # 构造签到数据
-            data = {
-                "f": "iphone",
-                "sign": sign_value,
-                "time": timestamp,
-                "v": "10.4.15",
-                "weixin": "1"
+            # 构建请求参数
+            current_time = int(time.time() * 1000)
+            params = {
+                'basic_v': '0',
+                'f': 'iphone',
+                'time': str(current_time),
+                'v': '11.1.35',
+                'weixin': '1',
+                'zhuanzai_ab': 'b'
             }
             
+            # 计算签名
+            sign = self._generate_sign_from_dict(params)
+            params['sign'] = sign
+            
+            # 设置特殊请求头
+            headers = self.session.headers.copy()
+            headers.update({
+                'request_key': str(int(time.time() * 1000000000))[:18],
+                'Content-Encoding': 'gzip',
+                'Accept-Language': 'zh-Hans-CN;q=1'
+            })
+            
             # 发送签到请求
-            response = self.session.post(sign_url, data=data, timeout=10)
+            response = self.session.post(sign_url, data=params, headers=headers, timeout=10)
             
             # 检查响应内容判断签到结果
             if response.status_code == 200:
                 result = response.json()
                 if result.get('error_code') == 0:
                     data = result.get('data', {})
-                    return True, f"签到成功，获得{data.get('daily_award', {}).get('award_value', 0)}积分"
+                    # 提取签到信息
+                    cpadd = data.get('cpadd', 0)  # 本次新增积分
+                    daily_num = data.get('daily_num', 0)  # 连续签到天数
+                    cpoints = data.get('cpoints', 0)  # 当前积分
+                    
+                    return True, f"签到成功，获得{cpadd}积分，连续签到{daily_num}天，当前积分{cpoints}"
                 elif result.get('error_code') == 1001 and '已签到' in result.get('error_msg', ''):
                     return True, "今日已签到"
                 else:
@@ -116,7 +161,10 @@ class SMZDMClient:
                 result = response.json()
                 if result.get('error_code') == 0:
                     data = result.get('data', {})
-                    return True, f"当前积分: {data.get('point', 0)}"
+                    point = data.get('point', 0)
+                    exp = data.get('exp', 0)
+                    gold = data.get('gold', 0)
+                    return True, f"当前积分: {point}, 经验值: {exp}, 金币: {gold}"
                 else:
                     return False, f"获取积分信息失败: {result.get('error_msg', '未知错误')}"
             else:
